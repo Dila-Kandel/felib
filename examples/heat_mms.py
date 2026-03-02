@@ -4,30 +4,30 @@ from typing import Sequence
 
 import numpy as np
 
-import fem
+import felib
 
 
 def mms(esize: float = 0.05):
-    class Everywhere(fem.collections.RegionSelector):
+    class Everywhere(felib.collections.RegionSelector):
         def __call__(self, x: Sequence[float], on_boundary: bool) -> bool:
             return True
 
-    class HeatSource(fem.collections.ScalarField):
+    class HeatSource(felib.collections.ScalarField):
         def __call__(self, x: Sequence[float], time: Sequence[float]) -> float:
             k = 12.0
             s = 24 * k * x[1] * (np.sin(12 * x[0] ** 2) + 24 * x[0] ** 2 * np.cos(12 * x[0] ** 2))
             return s
 
-    nodes, elements = fem.meshing.uniform_plate(esize=esize)
-    mesh = fem.mesh.Mesh(nodes=nodes, elements=elements)
-    mesh.block(name="Block-1", region=Everywhere(), cell_type=fem.cell.Tri3)
+    nodes, elements = felib.meshing.uniform_plate(esize=esize)
+    mesh = felib.mesh.Mesh(nodes=nodes, elements=elements)
+    mesh.block(name="Block-1", region=Everywhere(), cell_type=felib.cell.Tri3)
     mesh.elemset("All", region=Everywhere())
 
-    m = fem.material.HeatConduction(conductivity=12.0, specific_heat=1.0)
-    model = fem.model.Model(mesh, name="heat_mms")
-    model.assign_properties(block="Block-1", element=fem.element.DCP3(), material=m)
+    m = felib.material.HeatConduction(conductivity=12.0, specific_heat=1.0)
+    model = felib.model.Model(mesh, name="heat_mms")
+    model.assign_properties(block="Block-1", element=felib.element.DCP3(), material=m)
 
-    simulation = fem.simulation.Simulation(model)
+    simulation = felib.simulation.Simulation(model)
     step = simulation.heat_transfer_step()
     step.source(elements="All", field=HeatSource())
 
@@ -43,9 +43,9 @@ def mms(esize: float = 0.05):
     u = simulation.dofs[1]
     analytic = T(model.coords[:, 0], model.coords[:, 1])
     assert np.amax(np.abs(u - analytic)) < 0.03
-    fem.plotting.tplot(model.coords, model.connect, u)
-    fem.plotting.tplot3d(model.coords, model.connect, u)
-    fem.plotting.tplot3d(
+    felib.plotting.tplot(model.coords, model.connect, u)
+    felib.plotting.tplot3d(model.coords, model.connect, u)
+    felib.plotting.tplot3d(
         model.coords,
         model.connect,
         u - analytic,

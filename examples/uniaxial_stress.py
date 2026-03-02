@@ -4,32 +4,32 @@ from typing import Sequence
 
 import numpy as np
 
-import fem
+import felib
 
 
 def exercise(esize: float = 0.05):
-    class Everywhere(fem.collections.RegionSelector):
+    class Everywhere(felib.collections.RegionSelector):
         def __call__(self, x: Sequence[float], on_boundary: bool) -> bool:
             return True
 
-    class Bottom(fem.collections.RegionSelector):
+    class Bottom(felib.collections.RegionSelector):
         def __call__(self, x: Sequence[float], on_boundary: bool) -> bool:
             if on_boundary and x[1] < -0.999:
                 return True
             return False
 
-    nodes, elements = fem.meshing.plate_with_hole(esize=esize)
-    mesh = fem.mesh.Mesh(nodes=nodes, elements=elements)
-    mesh.block(name="Block-1", region=Everywhere(), cell_type=fem.cell.Tri3)
+    nodes, elements = felib.meshing.plate_with_hole(esize=esize)
+    mesh = felib.mesh.Mesh(nodes=nodes, elements=elements)
+    mesh.block(name="Block-1", region=Everywhere(), cell_type=felib.cell.Tri3)
     mesh.nodeset("Point", region=lambda x, on_boundary: abs(x[0]) < 0.05 and x[1] > 0.999)
     mesh.nodeset("Top", region=lambda x, on_boundary: x[1] > 0.99)
     mesh.sideset("Bottom", region=Bottom())
 
-    model = fem.model.Model(mesh, name="uniaxial_stress")
-    material = fem.material.LinearElastic(density=2400.0, youngs_modulus=30.0e9, poissons_ratio=0.3)
-    model.assign_properties(block="Block-1", element=fem.element.CPS3(), material=material)
+    model = felib.model.Model(mesh, name="uniaxial_stress")
+    material = felib.material.LinearElastic(density=2400.0, youngs_modulus=30.0e9, poissons_ratio=0.3)
+    model.assign_properties(block="Block-1", element=felib.element.CPS3(), material=material)
 
-    simulation = fem.simulation.Simulation(model)
+    simulation = felib.simulation.Simulation(model)
     step = simulation.static_step()
     step.boundary(nodes="Point", dofs=[0, 1], value=0.0)
     step.boundary(nodes="Top", dofs=[1], value=0.0)
@@ -44,7 +44,7 @@ def exercise(esize: float = 0.05):
     print(solution.iterations)
 
     scale = 0.25 / np.max(np.abs(u))
-    fem.plotting.tplot(model.coords + scale * u, model.connect, U)
+    felib.plotting.tplot(model.coords + scale * u, model.connect, U)
 
 
 def main() -> int:

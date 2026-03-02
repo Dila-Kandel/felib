@@ -5,10 +5,10 @@ from typing import Sequence
 import numpy as np
 
 np.set_printoptions(precision=2)
-import fem
+import felib
 
-X = fem.X
-Y = fem.Y
+X = felib.X
+Y = felib.Y
 
 
 def heat1(esize: float = 0.05):
@@ -24,40 +24,40 @@ def heat1(esize: float = 0.05):
 
     """
 
-    class Everywhere(fem.collections.RegionSelector):
+    class Everywhere(felib.collections.RegionSelector):
         def __call__(self, x: Sequence[float], on_boundary: bool) -> bool:
             return True
 
-    class Top(fem.collections.RegionSelector):
+    class Top(felib.collections.RegionSelector):
         def __call__(self, x: Sequence[float], on_boundary: bool) -> bool:
             if on_boundary and x[1] > 0.999:
                 return True
             return False
 
-    class Bottom(fem.collections.RegionSelector):
+    class Bottom(felib.collections.RegionSelector):
         def __call__(self, x: Sequence[float], on_boundary: bool) -> bool:
             if on_boundary and x[1] < -0.999:
                 return True
             return False
 
-    nodes, elements = fem.meshing.uniform_plate(esize=esize)
-    mesh = fem.mesh.Mesh(nodes=nodes, elements=elements)
-    mesh.block(name="Block-1", region=Everywhere(), cell_type=fem.cell.Tri3)
+    nodes, elements = felib.meshing.uniform_plate(esize=esize)
+    mesh = felib.mesh.Mesh(nodes=nodes, elements=elements)
+    mesh.block(name="Block-1", region=Everywhere(), cell_type=felib.cell.Tri3)
     mesh.sideset("Top", region=Top())
     mesh.sideset("Bottom", region=Bottom())
     mesh.elemset("All", region=Everywhere())
 
-    m = fem.material.HeatConduction(conductivity=12.0, specific_heat=1.0)
-    model = fem.model.Model(mesh, name="heat1")
-    model.assign_properties(block="Block-1", element=fem.element.DCP3(), material=m)
+    m = felib.material.HeatConduction(conductivity=12.0, specific_heat=1.0)
+    model = felib.model.Model(mesh, name="heat1")
+    model.assign_properties(block="Block-1", element=felib.element.DCP3(), material=m)
 
-    simulation = fem.simulation.Simulation(model)
+    simulation = felib.simulation.Simulation(model)
     step = simulation.heat_transfer_step()
     step.film(sideset="Top", h=250.0, ambient_temp=25.0)
     step.dflux(sideset="Bottom", magnitude=2000.0, direction=[0.0, 1.0])
     simulation.run()
     u = simulation.dofs[1]
-    fem.plotting.tplot(model.coords, model.connect, u)
+    felib.plotting.tplot(model.coords, model.connect, u)
     thi = u[np.where(np.abs(mesh.coords[:, 1] - 1.0) < 1e-6)[0]]
     assert np.allclose(thi, 33)
     tlo = u[np.where(np.abs(mesh.coords[:, 1] + 1.0) < 1e-6)[0]]

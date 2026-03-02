@@ -3,28 +3,28 @@ from typing import Sequence
 
 import numpy as np
 
-import fem
+import felib
 
-X = fem.X
-Y = fem.Y
+X = felib.X
+Y = felib.Y
 
 
 def mpc():
-    class Everywhere(fem.collections.RegionSelector):
+    class Everywhere(felib.collections.RegionSelector):
         def __call__(self, x: Sequence[float], on_boundary: bool) -> bool:
             return True
 
     nodes = [[1, 0.0, 0.0], [2, 1.0, 0.0], [3, 1.0, 1.0], [4, 0.0, 1.0], [5, 0.5, 0.5]]
     elements = [[1, 1, 2, 5], [2, 2, 3, 5], [3, 3, 4, 5], [4, 4, 1, 5]]
-    mesh = fem.mesh.Mesh(nodes=nodes, elements=elements)
-    mesh.block(name="Block-1", region=Everywhere(), cell_type=fem.cell.Tri3)
+    mesh = felib.mesh.Mesh(nodes=nodes, elements=elements)
+    mesh.block(name="Block-1", region=Everywhere(), cell_type=felib.cell.Tri3)
     mesh.nodeset("Boundary", nodes=[1, 2, 3, 4])
 
-    m = fem.material.LinearElastic(density=2400.0, youngs_modulus=30.0e9, poissons_ratio=0.3)
-    model = fem.model.Model(mesh, name="plate_with_hole")
-    model.assign_properties(block="Block-1", element=fem.element.CPS3(), material=m)
+    m = felib.material.LinearElastic(density=2400.0, youngs_modulus=30.0e9, poissons_ratio=0.3)
+    model = felib.model.Model(mesh, name="plate_with_hole")
+    model.assign_properties(block="Block-1", element=felib.element.CPS3(), material=m)
 
-    simulation = fem.simulation.Simulation(model)
+    simulation = felib.simulation.Simulation(model)
     step = simulation.static_step()
     step.boundary(nodes="Boundary", dofs=[X, Y], value=0.0)
     step.point_load(nodes=5, dofs=[1], value=-1e3)
@@ -37,7 +37,7 @@ def mpc():
     print(np.amax(U))
 
     scale = 0.25 / np.max(np.abs(u))
-    fem.plotting.tplot(model.coords + scale * u, model.connect, U)
+    felib.plotting.tplot(model.coords + scale * u, model.connect, U)
 
 
 def main() -> int:

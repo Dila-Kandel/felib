@@ -3,8 +3,8 @@ requires = ["setuptools>=80", "setuptools-scm>=8"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "fem"
-description = "fem: simple finite element solver"
+name = "felib"
+description = "felib: simple finite element solver"
 readme = "README.md"
 keywords = [ "finite elements"]
 license = { "file" = "LICENSE" }
@@ -78,7 +78,7 @@ filterwarnings = [ "ignore::DeprecationWarning" ]
 
 [tool.mypy]
 exclude = [
-    "src/fem/trash/"
+    "src/felib/trash/"
 ]
 
 [[tool.mypy.overrides]]

@@ -4,41 +4,41 @@ from typing import Sequence
 
 import numpy as np
 
-import fem
+import felib
 
-X = fem.X
-Y = fem.Y
+X = felib.X
+Y = felib.Y
 
 
 def exercise(esize: float = 0.05):
-    class Everywhere(fem.collections.RegionSelector):
+    class Everywhere(felib.collections.RegionSelector):
         def __call__(self, x: Sequence[float], on_boundary: bool) -> bool:
             return True
 
-    class Top(fem.collections.RegionSelector):
+    class Top(felib.collections.RegionSelector):
         def __call__(self, x: Sequence[float], on_boundary: bool) -> bool:
             if on_boundary and x[1] > 0.999:
                 return True
             return False
 
-    class Bottom(fem.collections.RegionSelector):
+    class Bottom(felib.collections.RegionSelector):
         def __call__(self, x: Sequence[float], on_boundary: bool) -> bool:
             if on_boundary and x[1] < -0.999:
                 return True
             return False
 
-    nodes, elements = fem.meshing.plate_with_hole(esize=esize)
-    mesh = fem.mesh.Mesh(nodes=nodes, elements=elements)
-    mesh.block(name="Block-1", region=Everywhere(), cell_type=fem.cell.Tri3)
+    nodes, elements = felib.meshing.plate_with_hole(esize=esize)
+    mesh = felib.mesh.Mesh(nodes=nodes, elements=elements)
+    mesh.block(name="Block-1", region=Everywhere(), cell_type=felib.cell.Tri3)
     mesh.nodeset("Top", region=Top())
     mesh.sideset("Bottom", region=Bottom())
     mesh.elemset("All", region=Everywhere())
 
-    m = fem.material.LinearElastic(density=2400.0, youngs_modulus=30.0e9, poissons_ratio=0.3)
-    model = fem.model.Model(mesh, name="plate_with_hole")
-    model.assign_properties(block="Block-1", element=fem.element.CPS3(), material=m)
+    m = felib.material.LinearElastic(density=2400.0, youngs_modulus=30.0e9, poissons_ratio=0.3)
+    model = felib.model.Model(mesh, name="plate_with_hole")
+    model.assign_properties(block="Block-1", element=felib.element.CPS3(), material=m)
 
-    simulation = fem.simulation.Simulation(model)
+    simulation = felib.simulation.Simulation(model)
     step = simulation.static_step()
     step.boundary(nodes="Top", dofs=[X, Y], value=0.0)
     step.traction(sideset="Bottom", magnitude=500e3, direction=[4 / 5, -3 / 5])
@@ -51,7 +51,7 @@ def exercise(esize: float = 0.05):
     print(np.amax(U))
 
     scale = 0.25 / np.max(np.abs(u))
-    fem.plotting.tplot(model.coords + scale * u, model.connect, U)
+    felib.plotting.tplot(model.coords + scale * u, model.connect, U)
 
 
 def main() -> int:

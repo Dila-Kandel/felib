@@ -5,10 +5,10 @@ from typing import Sequence
 import numpy as np
 
 np.set_printoptions(precision=2)
-import fem
+import felib
 
-X = fem.X
-Y = fem.Y
+X = felib.X
+Y = felib.Y
 
 
 def heat2(esize: float = 0.05):
@@ -24,52 +24,52 @@ def heat2(esize: float = 0.05):
 
     """
 
-    class Everywhere(fem.collections.RegionSelector):
+    class Everywhere(felib.collections.RegionSelector):
         def __call__(self, x: Sequence[float], on_boundary: bool) -> bool:
             return True
 
-    class Top(fem.collections.RegionSelector):
+    class Top(felib.collections.RegionSelector):
         def __call__(self, x: Sequence[float], on_boundary: bool) -> bool:
             if on_boundary and x[1] > 0.999:
                 return True
             return False
 
-    class Left(fem.collections.RegionSelector):
+    class Left(felib.collections.RegionSelector):
         def __call__(self, x: Sequence[float], on_boundary: bool) -> bool:
             if on_boundary and x[0] < -0.999:
                 return True
             return False
 
-    class Right(fem.collections.RegionSelector):
+    class Right(felib.collections.RegionSelector):
         def __call__(self, x: Sequence[float], on_boundary: bool) -> bool:
             if on_boundary and x[0] > 0.999:
                 return True
             return False
 
-    class Bottom(fem.collections.RegionSelector):
+    class Bottom(felib.collections.RegionSelector):
         def __call__(self, x: Sequence[float], on_boundary: bool) -> bool:
             if on_boundary and x[1] < -0.999:
                 return True
             return False
 
-    class HeatSource(fem.collections.ScalarField):
+    class HeatSource(felib.collections.ScalarField):
         def __call__(self, x: Sequence[float], time: Sequence[float]) -> float:
             return 1000.0 / np.sqrt(x[0] ** 2 + x[1] ** 2)
 
-    nodes, elements = fem.meshing.plate_with_hole(esize=esize)
-    mesh = fem.mesh.Mesh(nodes=nodes, elements=elements)
-    mesh.block(name="Block-1", region=Everywhere(), cell_type=fem.cell.Tri3)
+    nodes, elements = felib.meshing.plate_with_hole(esize=esize)
+    mesh = felib.mesh.Mesh(nodes=nodes, elements=elements)
+    mesh.block(name="Block-1", region=Everywhere(), cell_type=felib.cell.Tri3)
     mesh.nodeset("LHS", region=Left())
     mesh.nodeset("RHS", region=Right())
     mesh.sideset("Top", region=Top())
     mesh.sideset("Bottom", region=Bottom())
     mesh.elemset("All", region=Everywhere())
 
-    m = fem.material.HeatConduction(conductivity=12.0, specific_heat=1.0)
-    model = fem.model.Model(mesh, name="heat2")
-    model.assign_properties(block="Block-1", element=fem.element.DCP3(), material=m)
+    m = felib.material.HeatConduction(conductivity=12.0, specific_heat=1.0)
+    model = felib.model.Model(mesh, name="heat2")
+    model.assign_properties(block="Block-1", element=felib.element.DCP3(), material=m)
 
-    simulation = fem.simulation.Simulation(model)
+    simulation = felib.simulation.Simulation(model)
     step = simulation.heat_transfer_step()
     step.temperature(nodes="LHS", value=200.0)
     step.temperature(nodes="RHS", value=50.0)
@@ -78,8 +78,8 @@ def heat2(esize: float = 0.05):
     step.source(elements="All", field=HeatSource())
     simulation.run()
     u = simulation.dofs[1]
-    fem.plotting.tplot(model.coords, model.connect, u)
-    fem.plotting.rplot1(model.coords, simulation.csteps[-1].solution.react)
+    felib.plotting.tplot(model.coords, model.connect, u)
+    felib.plotting.rplot1(model.coords, simulation.csteps[-1].solution.react)
 
 
 def main() -> int:
