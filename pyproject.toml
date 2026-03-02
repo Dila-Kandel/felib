@@ -18,6 +18,7 @@ dependencies = [
     "ruff",
     "mypy",
     "numpy",
+    "pytest",
     "exodusii @ git+https://github.com/sandialabs/exodusii",
 ]
 requires-python = ">=3.10"
