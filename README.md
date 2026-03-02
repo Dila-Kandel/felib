@@ -1,4 +1,4 @@
-# fem
+# felib
 
 Simple finite element equation solver
 
@@ -7,11 +7,10 @@ Simple finite element equation solver
 ## One time setup
 
 ```console
-git clone git@github.com:tjfulle/me7540
-cd me7540
+git clone git@github.com:tjfulle/felib
+cd felib
 python3 -m venv venv
 source venv/bin/activate
-cd Exercises/fem
 python3 -m pip install -e .
 ```
 
