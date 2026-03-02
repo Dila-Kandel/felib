@@ -1,0 +1,10 @@
+#!/bin/bash
+source ./venv/bin/activate
+ruff format src
+ruff format examples
+ruff format tests
+ruff check --fix src
+ruff check --fix examples
+ruff check --fix tests
+mypy src
+pytest tests

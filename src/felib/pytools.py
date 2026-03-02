@@ -1,4 +1,7 @@
+import os
+from contextlib import contextmanager
 from functools import wraps
+from pathlib import Path
 
 
 def _require_unfrozen(method):
@@ -28,3 +31,13 @@ def frozen_property(method):
         return method(self)
 
     return wrapper
+
+
+@contextmanager
+def working_dir(path: Path):
+    cwd = Path.cwd()
+    try:
+        os.chdir(path)
+        yield
+    finally:
+        os.chdir(cwd)

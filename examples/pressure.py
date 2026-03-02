@@ -26,7 +26,9 @@ def exercise(esize: float = 0.05):
     mesh.sideset("Inside", region=Inside())
     mesh.elemset("All", region=Everywhere())
 
-    material = felib.material.LinearElastic(density=2400.0, youngs_modulus=30.0e9, poissons_ratio=0.3)
+    material = felib.material.LinearElastic(
+        density=2400.0, youngs_modulus=30.0e9, poissons_ratio=0.3
+    )
     model = felib.model.Model(mesh, name="Pressure")
     model.assign_properties(block="Block-1", element=felib.element.CPS3(), material=material)
 
