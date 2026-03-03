@@ -1,3 +1,5 @@
+from typing import Sequence
+
 import numpy as np
 from numpy.typing import NDArray
 
@@ -18,7 +20,21 @@ class LinearElastic(Material):
         self.poissons_ratio = poissons_ratio
         assert -1 <= self.poissons_ratio < 0.5
 
-    def eval(self, e: NDArray, ndir: int, nshr: int) -> tuple[NDArray, NDArray]:
+    def eval(
+        self,
+        hsv: NDArray,
+        e: NDArray,
+        de: NDArray,
+        time: Sequence[float],
+        dtime: float,
+        temp: float,
+        dtemp: float,
+        ndir: int,
+        nshr: int,
+        eleno: int,
+        step: int,
+        increment: int,
+    ) -> tuple[NDArray, NDArray]:
         E = self.youngs_modulus
         nu = self.poissons_ratio
         if ndir == 2 and nshr == 1:

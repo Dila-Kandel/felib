@@ -1,3 +1,5 @@
+from typing import Sequence
+
 import numpy as np
 from numpy.typing import NDArray
 
@@ -25,6 +27,20 @@ class HeatConduction(Material):
         assert self._conductivity.shape[0] == dim
         return self._conductivity
 
-    def eval(self, e: NDArray, ndir: int, nshr: int) -> tuple[NDArray, NDArray]:
+    def eval(
+        self,
+        hsv: NDArray,
+        e: NDArray,
+        de: NDArray,
+        time: Sequence[float],
+        dtime: float,
+        temp: float,
+        dtemp: float,
+        ndir: int,
+        nshr: int,
+        eleno: int,
+        step: int,
+        increment: int,
+    ) -> tuple[NDArray, NDArray]:
         D = self.conductivity(ndir)
         return D, np.dot(D, e)

@@ -30,6 +30,12 @@ class DCnD:
     """
 
     ndof: int = 1
+    ndim: int
+
+    def history_variables(self) -> list[str]:
+        if self.ndim == 2:
+            return ["DTx", "DTy", "Qx", "Qy"]
+        raise NotImplementedError
 
     def update_state(
         self,
@@ -79,7 +85,9 @@ class DCnD:
             Element internal flux vector.
         """
         ndim = p.shape[1]
-        D, q = material.eval(e, ndir=ndim, nshr=0)
+        n = len(self.history_variables())
+        temp = dtemp = 0.0  # place holder
+        D, q = material.eval(hsv[n:], e, de, time, dt, temp, dtemp, ndim, 0, eleno, step, increment)
         hsv[:2] = e
         hsv[2:] = q  # store element flux or internal quantities
         return D, q
@@ -88,6 +96,7 @@ class DCnD:
 class DCP3(P3, DCnD, IsoparametricElement):
     """3-node constant conductivity triangle element."""
 
+    ndim = 2
     gauss_pts = np.array([[1.0, 1.0], [4.0, 1.0], [1.0, 4.0]], dtype=float) / 6.0
     gauss_wts = np.array([1.0, 1.0, 1.0], dtype=float) / 6.0
     edge_gauss_pts = np.array([-1.0 / np.sqrt(3.0), 1.0 / np.sqrt(3.0)], dtype=float)
@@ -111,9 +120,6 @@ class DCP3(P3, DCnD, IsoparametricElement):
         B[0] = dNdx[0]
         B[1] = dNdx[1]
         return B
-
-    def history_variables(self) -> list[str]:
-        return ["DTx", "DTy", "Qx", "Qy"]
 
 
 class DCP4(P4, DCnD, IsoparametricElement):
@@ -142,6 +148,3 @@ class DCP4(P4, DCnD, IsoparametricElement):
         B[0] = dNdx[0]
         B[1] = dNdx[1]
         return B
-
-    def history_variables(self) -> list[str]:
-        return ["DTx", "DTy", "Qx", "Qy"]

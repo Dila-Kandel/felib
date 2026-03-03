@@ -89,6 +89,7 @@ class ElementBlock:
 
         # Integration point data
         nvars = len(self.element.history_variables())
+        nvars += len(self.material.history_variables())
         self.pdata: NDArray = np.zeros((2, self.connect.shape[0], self.element.npts, nvars))
 
     @classmethod
@@ -114,7 +115,9 @@ class ElementBlock:
         self.pdata[0, :] = self.pdata[1, :]
 
     def element_variable_names(self) -> list[str]:
-        return self.element.history_variables()
+        names = self.element.history_variables()
+        names.extend(self.material.history_variables())
+        return names
 
     def element_variable_values(self) -> Generator[tuple[str, NDArray], None, None]:
         v = self.pdata[1].mean(axis=1)

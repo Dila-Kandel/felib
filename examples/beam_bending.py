@@ -40,14 +40,14 @@ def beam_bending():
     u = simulation.dofs[1].reshape(model.nnode, -1)
 
     scale = 0.25 / np.max(np.abs(u))
+    ua = analytic_solution(mesh)
     _, ax = felib.plotting.mesh_plot_quad4(
-        model.coords + scale * u, model.connect, label="FE CPS4 Solution"
+        model.coords + scale * ua, model.connect, label="Analytic solution", color="r"
+    )
+    felib.plotting.mesh_plot_quad4(
+        model.coords + scale * u, model.connect, label="FE CPS4 Solution", ax=ax
     )
 
-    ua = analytic_solution(mesh)
-    felib.plotting.mesh_plot_quad4(
-        model.coords + scale * ua, model.connect, ax=ax, label="Analytic solution", color="r"
-    )
 
     ax.set_aspect("equal")
     plt.legend(loc="best")

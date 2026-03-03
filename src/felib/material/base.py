@@ -1,3 +1,5 @@
+from typing import Sequence
+
 from numpy.typing import NDArray
 
 
@@ -7,11 +9,28 @@ class Material:
     def __init__(self, *, density: float | None = None, **properties: float) -> None:
         self._density = density
 
-    def eval(self, e: NDArray, ndir: int, nshr: int) -> tuple[NDArray, NDArray]:
+    def eval(
+        self,
+        hsv: NDArray,
+        e: NDArray,
+        de: NDArray,
+        time: Sequence[float],
+        dtime: float,
+        temp: float,
+        dtemp: float,
+        ndir: int,
+        nshr: int,
+        eleno: int,
+        step: int,
+        increment: int,
+    ) -> tuple[NDArray, NDArray]:
         raise NotImplementedError
 
     def has_density(self) -> bool:
         return self._density is not None
+
+    def history_variables(self) -> list[str]:
+        return []
 
     @property
     def density(self) -> float:

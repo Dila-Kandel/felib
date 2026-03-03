@@ -64,6 +64,20 @@ class CnD:
         """
         return self.ndir + self.nshr
 
+    def history_variables(self) -> list[str]:
+        """
+        List of history variable names (strains and stresses).
+
+        Returns
+        -------
+        List of string labels.
+        """
+        if self.ndir == 2 and self.nshr == 1:
+            return ["exx", "eyy", "exy", "sxx", "syy", "sxy"]
+        if self.ndir == 3 and self.nshr == 1:
+            return ["exx", "eyy", "ezz", "exy", "sxx", "syy", "szz", "sxy"]
+        raise NotImplementedError
+
     def update_state(
         self,
         material: Material,
@@ -114,7 +128,11 @@ class CnD:
         tuple of (D, s)
             Material stiffness matrix D and stress vector s.
         """
-        D, s = material.eval(e, ndir=self.ndir, nshr=self.nshr)
+        temp = dtemp = 0.0  # place holder
+        n = len(self.history_variables())
+        D, s = material.eval(
+            hsv[n:], e, de, time, dt, temp, dtemp, self.ndir, self.nshr, eleno, step, increment
+        )
         hsv[: self.ntens] = e
         hsv[self.ntens : 2 * self.ntens] = s
         return D, s
@@ -193,16 +211,6 @@ class CPS3(CPX3):
         B[2, 1::2] = dNdx[0]
         return B
 
-    def history_variables(self) -> list[str]:
-        """
-        List of history variable names (strains and stresses).
-
-        Returns
-        -------
-        List of string labels.
-        """
-        return ["exx", "eyy", "exy", "sxx", "syy", "sxy"]
-
 
 class CPE3(CPX3):
     """Plane strain constant strain triangle element."""
@@ -218,9 +226,6 @@ class CPE3(CPX3):
         B[3, 0::2] = dNdx[1]
         B[3, 1::2] = dNdx[0]
         return B
-
-    def history_variables(self) -> list[str]:
-        return ["exx", "eyy", "ezz", "exy", "sxx", "syy", "szz", "sxy"]
 
 
 class CPX4(P4, CnD, IsoparametricElement):
@@ -262,9 +267,6 @@ class CPS4(CPX4):
         B[2, 1::2] = dNdx[0]
         return B
 
-    def history_variables(self) -> list[str]:
-        return ["exx", "eyy", "exy", "sxx", "syy", "sxy"]
-
 
 class CPE4(CPX4):
     """Plane strain constant strain quadrilateral element."""
@@ -280,6 +282,3 @@ class CPE4(CPX4):
         B[3, 0::2] = dNdx[1]
         B[3, 1::2] = dNdx[0]
         return B
-
-    def history_variables(self) -> list[str]:
-        return ["exx", "eyy", "ezz", "exy", "sxx", "syy", "szz", "sxy"]
