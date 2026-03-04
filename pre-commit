@@ -14,5 +14,6 @@ pytest tests
 echo "Running examples"
 cd examples
 for f in *.py; do
-  python "$f"
+  python "$f" > /dev/null
 done
+echo "All good!"

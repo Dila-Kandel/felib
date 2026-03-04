@@ -83,6 +83,7 @@ class ElementBlock:
         self.node_map = node_map
         self.elem_map = elem_map
         self.nnode = self.coords.shape[0]
+        self.nelem = self.connect.shape[0]
         self.ndof = self.nnode * self.element.dof_per_node
         # dof_map[node, dof] -> block (global) dof
         self.dof_map = np.arange(self.ndof, dtype=int).reshape(self.nnode, -1)

@@ -27,8 +27,8 @@ def mpc():
     simulation = felib.simulation.Simulation(model)
     step = simulation.static_step()
     step.boundary(nodes="Boundary", dofs=[X, Y], value=0.0)
-    step.point_load(nodes=5, dofs=[1], value=-1e3)
-    step.equation(5, X, 1.0, 5, 1, -1.0, 0.0)
+    step.point_load(nodes=5, dofs=[Y], value=-1e3)
+    step.equation(5, X, 1.0, 5, Y, -1.0, 0.0)
 
     simulation.run()
 

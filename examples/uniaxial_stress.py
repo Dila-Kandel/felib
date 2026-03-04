@@ -43,7 +43,6 @@ def exercise(esize: float = 0.05):
     u = solution.dofs.reshape((model.nnode, -1))
     U = np.linalg.norm(u, axis=1)
     print(np.amax(U))
-    print(solution.iterations)
 
     scale = 0.25 / np.max(np.abs(u))
     felib.plotting.tplot(model.coords + scale * u, model.connect, U)
