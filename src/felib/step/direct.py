@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
+from typing import Any
 from typing import Callable
 
 import numpy as np
@@ -43,7 +44,7 @@ class CompiledDirectStep(CompiledStep):
     """
 
     def solve(
-        self, fun: Callable[..., tuple[NDArray, NDArray]], u0: NDArray
+        self, fun: Callable[..., tuple[NDArray, NDArray]], u0: NDArray, args: tuple[Any, ...] = ()
     ) -> tuple[NDArray, NDArray]:
         ddofs = self.ddofs
         ndof = len(u0)
@@ -71,6 +72,7 @@ class CompiledDirectStep(CompiledStep):
             dsloads=self.dsloads,
             rloads=self.rloads,
             equations=self.equations,
+            args=args,
         )
         solver = DirectSolver()
         state = solver(kernel, x0)

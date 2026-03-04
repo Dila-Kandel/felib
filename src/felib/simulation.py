@@ -6,6 +6,8 @@ import numpy as np
 from numpy.typing import NDArray
 
 from . import constants
+from .block import ElementBlock
+from .collections import ElementBlockData
 from .step import CompiledStep
 from .step import DirectStep
 from .step import HeatTransferStep
@@ -26,6 +28,11 @@ class Simulation:
         # Solution and residual storage
         self.dofs: NDArray = np.zeros((2, self.model.ndof))
         self.flux: NDArray = np.zeros((2, self.model.ndof))
+        self.ebdata: list[ElementBlockData] = []
+        b: ElementBlock
+        for b in model.blocks:
+            d = ElementBlockData(b.name, b.nelem, b.element.npts, b.element_variable_names())
+            self.ebdata.append(d)
 
     def advance_state(self) -> None:
         """
@@ -36,8 +43,8 @@ class Simulation:
         """
         self.dofs[0, :] = self.dofs[1, :]
         self.flux[0, :] = self.flux[1, :]
-        for block in self.model.blocks:
-            block.advance_state()
+        for d in self.ebdata:
+            d.advance_state()
 
     def static_step(
         self, name: str | None = None, period: float = 1.0, **options: Any
@@ -66,13 +73,15 @@ class Simulation:
         For each step, triggers CompiledStep.solve(), advances state, and writes results to
         the Exodus output file.
         """
-        file = ExodusFile(self.model)
+        file = ExodusFile(self)
         parent: CompiledStep | None = None
         for i, step in enumerate(self.steps):
             cstep = step.compile(self.model, parent=parent)
-            self.dofs[1], self.flux[1] = cstep.solve(self.model.assemble, self.dofs[0])
+            self.dofs[1], self.flux[1] = cstep.solve(
+                self.model.assemble, self.dofs[0], args=(self.ebdata,)
+            )
             self.advance_state()
-            file.update(i + 1, cstep, self.dofs[1], self.flux[1])
+            file.update(i + 1, cstep.start, cstep.period, self.ebdata, self.dofs[1], self.flux[1])
             parent = cstep
             self.csteps.append(cstep)
 
@@ -85,13 +94,14 @@ class ExodusFile:
     definitions, and writing of results for each time step.
     """
 
-    def __init__(self, model: "Model") -> None:
+    def __init__(self, simulation: "Simulation") -> None:
         """
         Create and initialize the Exodus file.
 
         Args:
             model: Model object to write output for.
         """
+        model = simulation.model
         fname = "_".join(model.name.split()) + ".exo"
         file = exodusii.exo_file(fname, mode="w")
         file.put_init(
@@ -191,25 +201,32 @@ class ExodusFile:
             file.put_node_variable_values(1, "HFL", zero)
 
         # Write initial element variable values
-        for j, block in enumerate(model.blocks):
-            for name, value in block.element_variable_values():
+        for j, ebd in enumerate(simulation.ebdata):
+            for name, value in ebd.items(projection="centroid"):
                 file.put_element_variable_values(1, j + 1, name, value)
 
         self.file = file
         self.model = model
 
-    def update(self, step_no: int, step: CompiledStep, dofs: NDArray, flux: NDArray) -> None:
+    def update(
+        self,
+        step_no: int,
+        start: float,
+        period: float,
+        ebdata: list[ElementBlockData],
+        dofs: NDArray,
+        flux: NDArray,
+    ) -> None:
         """
         Write updated values for a new time step.
 
         Args:
             step_no: Index of current step.
-            step: CompiledStep object containing updated results.
         """
         file = self.file
         model = self.model
 
-        file.put_time(step_no + 1, step.start + step.period)
+        file.put_time(step_no + 1, start + period)
 
         ndim = model.coords.shape[1]
         u = dofs[self.umask]
@@ -226,9 +243,8 @@ class ExodusFile:
         if np.any(self.tmask):
             file.put_node_variable_values(step_no + 1, "T", dofs[self.tmask])
             file.put_node_variable_values(step_no + 1, "HFL", flux[self.tmask])
-
-        for j, block in enumerate(model.blocks):
-            for name, value in block.element_variable_values():
+        for j, bd in enumerate(ebdata):
+            for name, value in bd.items(projection="centroid"):
                 file.put_element_variable_values(step_no + 1, j + 1, name, value)
 
 

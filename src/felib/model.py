@@ -5,6 +5,7 @@ import numpy as np
 from numpy.typing import NDArray
 
 from .block import ElementBlock
+from .collections import ElementBlockData
 from .collections import Map
 from .element import Element
 from .material import Material
@@ -145,6 +146,7 @@ class Model:
         dloads: DLoadT,
         dsloads: DSLoadT,
         rloads: RLoadT,
+        ebdata: list[ElementBlockData],
     ) -> tuple[NDArray, NDArray]:
         """
         Global matrix and residual assembly.
@@ -174,6 +176,7 @@ class Model:
                 dt,
                 u[bft],
                 du[bft],
+                ebdata[b],
                 dloads=dloads.get(b),
                 dsloads=dsloads.get(b),
                 rloads=rloads.get(b),

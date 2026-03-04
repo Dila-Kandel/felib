@@ -1,6 +1,5 @@
 import logging
 from typing import TYPE_CHECKING
-from typing import Generator
 from typing import Sequence
 from typing import Type
 
@@ -9,6 +8,7 @@ from numpy.typing import NDArray
 
 from .collections import DistributedLoad
 from .collections import DistributedSurfaceLoad
+from .collections import ElementBlockData
 from .collections import Map
 from .collections import RobinLoad
 
@@ -88,11 +88,6 @@ class ElementBlock:
         # dof_map[node, dof] -> block (global) dof
         self.dof_map = np.arange(self.ndof, dtype=int).reshape(self.nnode, -1)
 
-        # Integration point data
-        nvars = len(self.element.history_variables())
-        nvars += len(self.material.history_variables())
-        self.pdata: NDArray = np.zeros((2, self.connect.shape[0], self.element.npts, nvars))
-
     @classmethod
     def from_topo_block(
         cls, blk: TopoBlock, element: "Element", material: "Material"
@@ -112,18 +107,10 @@ class ElementBlock:
         nft = self.element.node_freedom_table[0]
         return tuple([int(i) for i, x in enumerate(nft) if x])
 
-    def advance_state(self) -> None:
-        self.pdata[0, :] = self.pdata[1, :]
-
     def element_variable_names(self) -> list[str]:
         names = self.element.history_variables()
         names.extend(self.material.history_variables())
         return names
-
-    def element_variable_values(self) -> Generator[tuple[str, NDArray], None, None]:
-        v = self.pdata[1].mean(axis=1)
-        for i, name in enumerate(self.element_variable_names()):
-            yield name, v[:, i]
 
     def assemble(
         self,
@@ -133,11 +120,12 @@ class ElementBlock:
         dt: float,
         u: NDArray,
         du: NDArray,
+        data: ElementBlockData,
         dloads: dict[int, list[DistributedLoad]] | None = None,
         dsloads: dict[int, list[tuple[int, DistributedSurfaceLoad]]] | None = None,
         rloads: dict[int, list[RobinLoad]] | None = None,
     ) -> tuple[NDArray, NDArray]:
-        self.pdata[1, :] = self.pdata[0, :]
+        data.setup_scratch()
         K = np.zeros((self.ndof, self.ndof), dtype=float)
         R = np.zeros(self.ndof, dtype=float)
         dloads = dloads or {}
@@ -156,7 +144,7 @@ class ElementBlock:
                 self.coords[nodes],
                 u[eft],
                 du[eft],
-                self.pdata[1, e],
+                data.scratch[e],
                 dloads=dloads.get(e),
                 dsloads=dsloads.get(e),
                 rloads=rloads.get(e),

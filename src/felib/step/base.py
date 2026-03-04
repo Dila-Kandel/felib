@@ -4,6 +4,7 @@ from collections import defaultdict
 from dataclasses import dataclass
 from dataclasses import field
 from typing import TYPE_CHECKING
+from typing import Any
 from typing import Callable
 
 import numpy as np
@@ -78,7 +79,7 @@ class CompiledStep(ABC):
 
     @abstractmethod
     def solve(
-        self, fun: Callable[..., tuple[NDArray, NDArray]], u0: NDArray
+        self, fun: Callable[..., tuple[NDArray, NDArray]], u0: NDArray, args: tuple[Any, ...] = ()
     ) -> tuple[NDArray, NDArray]: ...
 
     @property

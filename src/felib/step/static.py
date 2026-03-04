@@ -238,7 +238,7 @@ class CompiledStaticStep(CompiledStep):
     solver_options: dict[str, Any] = field(default_factory=dict)
 
     def solve(
-        self, fun: Callable[..., tuple[NDArray, NDArray]], u0: NDArray
+        self, fun: Callable[..., tuple[NDArray, NDArray]], u0: NDArray, args: tuple[Any, ...] = ()
     ) -> tuple[NDArray, NDArray]:
         ddofs = self.ddofs
         ndof = len(u0)
@@ -256,6 +256,7 @@ class CompiledStaticStep(CompiledStep):
         kernel = AssemblyKernel(
             fun,
             u0,
+            args=args,
             step=self.number,
             increment=increment,
             time=time,

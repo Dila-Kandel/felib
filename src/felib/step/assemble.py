@@ -1,3 +1,4 @@
+from typing import Any
 from typing import Callable
 
 import numpy as np
@@ -26,6 +27,7 @@ class AssemblyKernel:
         dsloads: DSLoadT,
         rloads: RLoadT,
         equations: list[list],
+        args: tuple[Any, ...] = (),
     ) -> None:
         self.assemble_fun = assemble_fun
         self.u0 = u0
@@ -42,6 +44,7 @@ class AssemblyKernel:
         self.equations = equations
         self.stiff: NDArray = np.empty(0, dtype=float)
         self.resid: NDArray = np.empty(0, dtype=float)
+        self.fargs = args
 
     def __call__(self, x: NDArray):
         """
@@ -146,6 +149,7 @@ class AssemblyKernel:
             self.dloads,
             self.dsloads,
             self.rloads,
+            *self.fargs,
         )
         for dof, value in self.nbcs:
             self.resid[dof] -= value

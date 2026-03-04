@@ -4,6 +4,8 @@ from dataclasses import dataclass
 from dataclasses import field
 from typing import TYPE_CHECKING
 from typing import Any
+from typing import Generator
+from typing import Literal
 from typing import Sequence
 from typing import Type
 
@@ -37,6 +39,33 @@ class Map:
 
     def local(self, gid: int) -> int:
         return self.gid_to_lid[gid]
+
+
+class ElementBlockData:
+    def __init__(self, block: str, nelem: int, ngauss: int, elem_var_names: list[str]) -> None:
+        self.block: str = block
+        self.data: NDArray = np.zeros((2, nelem, ngauss, len(elem_var_names)))
+        self.elem_var_names: tuple[str, ...] = tuple(elem_var_names)
+
+    def advance_state(self) -> None:
+        self.data[0] = self.data[1]
+
+    @property
+    def scratch(self) -> NDArray:
+        return self.data[1]
+
+    def setup_scratch(self) -> None:
+        self.data[1] = self.data[0]
+
+    def items(
+        self, projection: Literal["centroid"] = "centroid"
+    ) -> Generator[tuple[str, NDArray], None, None]:
+        if projection == "centroid":
+            centroid_data = self.data[0].mean(axis=1)
+            for i, name in enumerate(self.elem_var_names):
+                yield name, centroid_data[:, i]
+        else:
+            raise NotImplementedError
 
 
 class Field(ABC):

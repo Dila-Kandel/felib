@@ -35,5 +35,5 @@ def test_patch4():
     step.traction(sideset="IHI", magnitude=1.0, direction=[1.0, 0])
 
     simulation.run()
-    for block in simulation.model.blocks:
-        assert np.allclose(block.pdata[1, :, :, 4], 1.0)
+    for ebd in simulation.ebdata:
+        assert np.allclose(ebd.data[0, :, :, 4], 1.0)
