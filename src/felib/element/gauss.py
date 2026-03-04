@@ -23,23 +23,22 @@ def gauss1d(n: int) -> tuple[NDArray, NDArray]:
         wts = np.array([wa, wb, wb, wa], dtype=float)
     else:
         raise NotImplementedError
-    wts.flags.writeable = False
     pts.flags.writeable = False
-    return wts, pts
+    wts.flags.writeable = False
+    return pts, wts
 
 
 def gauss2d(n: int) -> tuple[NDArray, NDArray]:
+    w, p = [], []
     xi, wi = gauss1d(n)
-    w = []
-    p = []
     for i in range(n):
         for j in range(n):
             p.append([xi[i], xi[j]])
-            w.append([wi[i], wi[j]])
-    wts, pts = np.asarray(w), np.asanyarray(p)
-    wts.flags.writeable = False
+            w.append(wi[i] * wi[j])
+    pts, wts = np.asarray(p), np.asanyarray(w)
     pts.flags.writeable = False
-    return wts, pts
+    wts.flags.writeable = False
+    return pts, wts
 
 
 def gauss2x2() -> tuple[NDArray, NDArray]:
@@ -61,11 +60,11 @@ def gauss4x4() -> tuple[NDArray, NDArray]:
 
 
 def gauss_tri1() -> tuple[NDArray, NDArray]:
-    wts = np.array([0.5], dtype=float)
     pts = np.array([[1.0, 1.0]], dtype=float) / 3.0
-    wts.flags.writeable = False
+    wts = np.array([0.5], dtype=float)
     pts.flags.writeable = False
-    return wts, pts
+    wts.flags.writeable = False
+    return pts, wts
 
 
 def gauss_tri3() -> tuple[NDArray, NDArray]:
@@ -73,7 +72,7 @@ def gauss_tri3() -> tuple[NDArray, NDArray]:
     pts = np.array([[1.0, 1.0], [4.0, 1.0], [1.0, 4.0]], dtype=float) / 6.0
     wts.flags.writeable = False
     pts.flags.writeable = False
-    return wts, pts
+    return pts, wts
 
 
 def gauss_tri7() -> tuple[NDArray, NDArray]:
@@ -105,4 +104,4 @@ def gauss_tri7() -> tuple[NDArray, NDArray]:
         ],
         dtype=float,
     )
-    return wts, pts
+    return pts, wts

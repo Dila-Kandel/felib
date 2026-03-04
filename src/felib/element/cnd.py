@@ -148,8 +148,8 @@ class CPX3(Tri3, ContinuumElement, IsoparametricElement):
     and isoparametric quadrature definitions.
     """
 
-    gauss_wts, gauss_pts = gauss.gauss_tri3()
-    edge_gauss_wts, edge_gauss_pts = gauss.gauss1d(2)
+    gauss_pts, gauss_wts = gauss.gauss_tri3()
+    edge_gauss_pts, edge_gauss_wts = gauss.gauss1d(2)
 
     @property
     def node_freedom_table(self) -> list[tuple[int, ...]]:
@@ -235,8 +235,8 @@ class CPX4(Quad4, ContinuumElement, IsoparametricElement):
     Geometric shape (Quad4) with continuum material update behavior.
     """
 
-    gauss_wts, gauss_pts = gauss.gauss2x2()
-    edge_gauss_wts, edge_gauss_pts = gauss.gauss1d(2)
+    gauss_pts, gauss_wts = gauss.gauss2x2()
+    edge_gauss_pts, edge_gauss_wts = gauss.gauss1d(2)
 
     @property
     def node_freedom_table(self) -> list[tuple[int, ...]]:
@@ -289,8 +289,8 @@ class CPX8(Quad8, ContinuumElement, IsoparametricElement):
     Geometric shape (Quad8) with continuum material update behavior.
     """
 
-    gauss_wts, gauss_pts = gauss.gauss3x3()
-    edge_gauss_wts, edge_gauss_pts = gauss.gauss1d(3)
+    gauss_pts, gauss_wts = gauss.gauss3x3()
+    edge_gauss_pts, edge_gauss_wts = gauss.gauss1d(3)
 
     @property
     def node_freedom_table(self) -> list[tuple[int, ...]]:

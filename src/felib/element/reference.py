@@ -82,10 +82,8 @@ class ReferenceElement:
         ix = self.edges[edge_no]
         n = len(ix)
         pd = p[ix]
-        if n == 2:
-            return 0.5 * (pd[0] + pd[1])
-        if n == 3:
-            return np.mean(pd, axis=0)
+        if n in (2, 3):
+            return 0.5 * (pd[0] + pd[-1])
         raise NotImplementedError
 
 
@@ -103,6 +101,60 @@ class Tri3(ReferenceElement):
 
     def shape_derivative(self, xi: NDArray) -> NDArray:
         return np.array([[-1.0, 1.0, 0.0], [-1.0, 0.0, 1.0]])
+
+
+class Tri6(ReferenceElement):
+    """Quadratic 6-node triangle
+    Notes
+    -----
+    Node and element face numbering
+
+                2
+               /  \
+         [2]  5    4  [1]
+             /      \
+            0---3----1
+                [0]
+
+    """
+
+    family = "TRI6"
+    edges = np.array([[0, 3, 1], [1, 4, 2], [2, 5, 0]], dtype=int)
+    faces = np.array([[0, 1, 2, 3, 4, 5]], dtype=int)
+    ref_coords = np.array(
+        [[0.0, 0.0], [1.0, 0.0], [0.0, 1.0], [0.5, 0.0], [0.5, 0.5], [0.0, 0.5]], dtype=float
+    )
+
+    def shape(self, xi: NDArray) -> NDArray:
+        r, t = xi
+        L1 = 1.0 - r - t
+        L2 = r
+        L3 = t
+        N = np.zeros(6, dtype=float)
+        N[0] = (2.0 * L1 - 1.0) * L1
+        N[1] = (2.0 * L2 - 1.0) * L2
+        N[2] = (2.0 * L3 - 1.0) * L3
+        N[3] = 4.0 * L1 * L2
+        N[4] = 4.0 * L2 * L3
+        N[5] = 4.0 * L3 * L1
+        return N
+
+    def shape_derivative(self, xi: NDArray) -> NDArray:
+        r, t = xi
+        L1 = 1.0 - r - t
+        L2 = r
+        L3 = t
+        dL = np.array([[-1.0, -1.0], [1.0, 0.0], [0.0, 1.0]])
+        dN = np.zeros((2, 6), dtype=float)
+        # Corner nodes
+        for i, L in enumerate((L1, L2, L3)):
+            dNi_dL = 4.0 * L - 1.0
+            dN[:, i] = dNi_dL * dL[i]
+        # Edge nodes
+        dN[:, 3] = 4.0 * (L2 * dL[0] + L1 * dL[1])
+        dN[:, 4] = 4.0 * (L3 * dL[1] + L2 * dL[2])
+        dN[:, 5] = 4.0 * (L1 * dL[2] + L3 * dL[0])
+        return dN
 
 
 class Quad4(ReferenceElement):
@@ -198,27 +250,21 @@ class Quad8(ReferenceElement):
         s, t = xi
         dN = np.zeros((2, 8), dtype=float)
         dN[0, 0] = 0.25 * (1.0 - t) * (2.0 * s + t)
-        dN[1, 0] = 0.25 * (1.0 - s) * (2.0 * t + s)
-
         dN[0, 1] = 0.25 * (1.0 - t) * (2.0 * s - t)
-        dN[1, 1] = 0.25 * (1.0 + s) * (2.0 * t + s)
-
         dN[0, 2] = 0.25 * (1.0 + t) * (2.0 * s + t)
-        dN[1, 2] = 0.25 * (1.0 + s) * (2.0 * t + s)
-
         dN[0, 3] = 0.25 * (1.0 + t) * (2.0 * s - t)
-        dN[1, 3] = 0.25 * (1.0 - s) * (2.0 * t - s)
-
         dN[0, 4] = -s * (1.0 - t)
-        dN[1, 4] = -0.5 * (1.0 - s**2)
-
         dN[0, 5] = 0.5 * (1.0 - t**2)
-        dN[1, 5] = -(1.0 + s) * t
-
         dN[0, 6] = -s * (1.0 + t)
-        dN[1, 6] = 0.5 * (1.0 - s**2)
-
         dN[0, 7] = -0.5 * (1.0 - t**2)
+
+        dN[1, 0] = 0.25 * (1.0 - s) * (2.0 * t + s)
+        dN[1, 1] = 0.25 * (1.0 + s) * (2.0 * t - s)
+        dN[1, 2] = 0.25 * (1.0 + s) * (2.0 * t + s)
+        dN[1, 3] = 0.25 * (1.0 - s) * (2.0 * t - s)
+        dN[1, 4] = -0.5 * (1.0 - s**2)
+        dN[1, 5] = -(1.0 + s) * t
+        dN[1, 6] = 0.5 * (1.0 - s**2)
         dN[1, 7] = -(1.0 - s) * t
 
         return dN

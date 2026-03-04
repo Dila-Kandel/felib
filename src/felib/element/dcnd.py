@@ -91,8 +91,8 @@ class DCP3(Tri3, DiffusiveContinueElement, IsoparametricElement):
     """3-node constant conductivity triangle element."""
 
     ndir = 2
-    gauss_wts, gauss_pts = gauss.gauss_tri3()
-    edge_gauss_wts, edge_gauss_pts = gauss.gauss1d(2)
+    gauss_pts, gauss_wts = gauss.gauss_tri3()
+    edge_gauss_pts, edge_gauss_wts = gauss.gauss1d(2)
 
     @property
     def node_freedom_table(self) -> list[tuple[int, ...]]:
@@ -118,8 +118,8 @@ class DCP4(Quad4, DiffusiveContinueElement, IsoparametricElement):
     """4-node constant conductivity quadrilateral element."""
 
     ndir = 2
-    gauss_wts, gauss_pts = gauss.gauss2x2()
-    edge_gauss_wts, edge_gauss_pts = gauss.gauss1d(2)
+    gauss_pts, gauss_wts = gauss.gauss2x2()
+    edge_gauss_pts, edge_gauss_wts = gauss.gauss1d(2)
 
     @property
     def node_freedom_table(self) -> list[tuple[int, ...]]:

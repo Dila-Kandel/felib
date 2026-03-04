@@ -358,3 +358,5 @@ class _MeshBuilder:
             elif sides is not None:
                 for el, side in sides:
                     self.mesh._sidesets[name].append((self.mesh.elem_map.local(el), side - 1))
+            if name not in self.mesh._sidesets:
+                raise ValueError(f"{name}: could not find sides in region")

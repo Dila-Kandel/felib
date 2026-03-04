@@ -1,4 +1,6 @@
 #!/bin/bash
+set -e
+export MPLBACKEND=Agg
 source ./venv/bin/activate
 ruff format src
 ruff format examples
@@ -8,3 +10,9 @@ ruff check --fix examples
 ruff check --fix tests
 mypy src
 pytest tests
+
+echo "Running examples"
+cd examples
+for f in *.py; do
+  python "$f"
+done

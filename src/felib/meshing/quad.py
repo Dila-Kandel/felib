@@ -153,47 +153,33 @@ def gridmesh2d_quad8(
     s, t = np.meshgrid(s, t, indexing="xy")
     x, y = mapfn(s, t)
 
-    coords = np.column_stack((x.ravel(), y.ravel()))
+    node_map = -np.ones((nny, nnx), dtype=int)
+    nid = 0
+    xc = []
+    for j in range(nny):
+        for i in range(nnx):
+            if i % 2 == 1 and j % 2 == 1:
+                continue  # unused interior node
+            node_map[j, i] = nid
+            xc.append([x[j, i], y[j, i]])
+            nid += 1
+    coords = np.array(xc, dtype=float)
 
-    # element indices (coarse grid)
-    i = np.arange(nx)
-    j = np.arange(ny)
-    ix, jx = np.meshgrid(i, j, indexing="xy")
-
-    # bottom-left corner index in refined grid
-    ii = 2 * ix
-    jj = 2 * jx
-
-    # Bottom-left
-    n0 = jj * nnx + ii
-
-    # Bottom-right
-    n1 = n0 + 2
-
-    # Top-left
-    n3 = n0 + 2 * nnx
-
-    # Top-right
-    n2 = n3 + 2
-
-    # Midside nodes
-    n4 = n0 + 1
-    n5 = n1 + nnx
-    n6 = n3 + 1
-    n7 = n0 + nnx
-
-    conn = np.column_stack(
-        (
-            n0.ravel(),
-            n1.ravel(),
-            n2.ravel(),
-            n3.ravel(),
-            n4.ravel(),
-            n5.ravel(),
-            n6.ravel(),
-            n7.ravel(),
-        )
-    ).astype(np.int64)
+    ec: list[list[int]] = []
+    for ey in range(ny):
+        for ex in range(nx):
+            ii = 2 * ex
+            jj = 2 * ey
+            n0 = node_map[jj, ii]
+            n1 = node_map[jj, ii + 2]
+            n2 = node_map[jj + 2, ii + 2]
+            n3 = node_map[jj + 2, ii]
+            n4 = node_map[jj, ii + 1]
+            n5 = node_map[jj + 1, ii + 2]
+            n6 = node_map[jj + 2, ii + 1]
+            n7 = node_map[jj + 1, ii]
+            ec.append([n0, n1, n2, n3, n4, n5, n6, n7])
+    conn = np.array(ec, dtype=int)
 
     return coords, conn
 

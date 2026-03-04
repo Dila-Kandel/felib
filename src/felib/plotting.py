@@ -6,7 +6,7 @@ from matplotlib.figure import Figure
 from matplotlib.figure import SubFigure
 from numpy.typing import NDArray
 
-from .element import IsoparametricElement
+from .element import ReferenceElement
 
 
 def rplot1(p: NDArray, r: NDArray) -> None:
@@ -60,13 +60,26 @@ def mesh_plot_quad4(
     label: str | None = None,
     color: str = "k",
 ) -> tuple[Figure | SubFigure, Axes]:
-    from .element import CPE4
+    from .element import Quad4
 
-    return mesh_plot(CPE4(), p, connect, label=label, n_edge=n_edge, ax=ax, color=color)
+    return mesh_plot(Quad4(), p, connect, label=label, n_edge=n_edge, ax=ax, color=color)
+
+
+def mesh_plot_quad8(
+    p: NDArray,
+    connect: NDArray,
+    n_edge: int = 10,
+    ax: Axes | None | None = None,
+    label: str | None = None,
+    color: str = "k",
+) -> tuple[Figure | SubFigure, Axes]:
+    from .element import Quad8
+
+    return mesh_plot(Quad8(), p, connect, label=label, n_edge=n_edge, ax=ax, color=color)
 
 
 def mesh_plot(
-    element: IsoparametricElement,
+    element: ReferenceElement,
     p: NDArray,
     connect: NDArray,
     n_edge: int = 10,
