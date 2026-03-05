@@ -44,7 +44,8 @@ def test_mms(tmp_path: Path):
 
         # Choose elements on the interior to neglect edge effects
         ix = np.where((np.abs(model.coords[:, 0]) < 0.8) & (np.abs(model.coords[:, 1]) < 0.8))[0]
-        u = simulation.dofs[1][ix]
+        dofs = simulation.ndata.gather_dofs()
+        u = dofs[ix]
         analytic = T(model.coords[ix, 0], model.coords[ix, 1])
         assert np.amax(np.abs(u - analytic)) < 1.5e-3
 
@@ -96,7 +97,7 @@ def test_heat1(tmp_path: Path):
         step.film(sideset="Top", h=250.0, ambient_temp=25.0)
         step.dflux(sideset="Bottom", magnitude=2000.0, direction=[0.0, 1.0])
         simulation.run()
-        u = simulation.dofs[1]
+        u = simulation.ndata.gather_dofs()
         thi = u[np.where(np.abs(mesh.coords[:, 1] - 1.0) < 1e-6)[0]]
         assert np.allclose(thi, 33)
         tlo = u[np.where(np.abs(mesh.coords[:, 1] + 1.0) < 1e-6)[0]]

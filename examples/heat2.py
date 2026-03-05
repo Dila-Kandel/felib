@@ -77,7 +77,7 @@ def heat2(esize: float = 0.05):
     step.dflux(sideset="Bottom", magnitude=2000.0, direction=[0.0, 1.0])
     step.source(elements="All", field=HeatSource())
     simulation.run()
-    u = simulation.dofs[1]
+    u = simulation.ndata["T"]
     felib.plotting.tplot(model.coords, model.connect, u)
     felib.plotting.rplot1(model.coords, simulation.csteps[-1].solution.react)
 

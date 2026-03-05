@@ -40,7 +40,7 @@ def mms(esize: float = 0.05):
 
     simulation.run()
 
-    u = simulation.dofs[1]
+    u = simulation.ndata["T"]
     analytic = T(model.coords[:, 0], model.coords[:, 1])
     assert np.amax(np.abs(u - analytic)) < 0.03
     felib.plotting.tplot(model.coords, model.connect, u)

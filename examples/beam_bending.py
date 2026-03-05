@@ -19,8 +19,8 @@ def beam_bending() -> None:
     q4 = beam_bending_quad4()
     q8 = beam_bending_quad8()
 
-    u4 = q4.dofs[1].reshape(q4.model.nnode, -1)
-    u8 = q8.dofs[1].reshape(q8.model.nnode, -1)
+    u4 = q4.ndata["u"]
+    u8 = q8.ndata["u"]
 
     scale = 0.25 / np.max(np.abs(u4))
     ua = analytic_solution(q4.model.mesh)

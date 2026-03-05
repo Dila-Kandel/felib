@@ -26,8 +26,7 @@ from typing import Sequence
 import numpy as np
 from numpy.typing import NDArray
 
-from ..constants import Ux
-from ..constants import Uy
+from ..dof_manager import DOF
 from ..material import Material
 from . import gauss
 from .isop import IsoparametricElement
@@ -160,7 +159,7 @@ class CPX3(Tri3, ContinuumElement, IsoparametricElement):
         -------
         List of tuples mapping node DOFs (u,v, other reserved slots).
         """
-        return [(Ux, Uy), (Ux, Uy), (Ux, Uy)]
+        return [(DOF.ux, DOF.uy), (DOF.ux, DOF.uy), (DOF.ux, DOF.uy)]
 
     def pmatrix(self, xi: NDArray) -> NDArray:
         """
@@ -240,7 +239,12 @@ class CPX4(Quad4, ContinuumElement, IsoparametricElement):
 
     @property
     def node_freedom_table(self) -> list[tuple[int, ...]]:
-        return [(Ux, Uy), (Ux, Uy), (Ux, Uy), (Ux, Uy)]
+        return [
+            (DOF.ux, DOF.uy),
+            (DOF.ux, DOF.uy),
+            (DOF.ux, DOF.uy),
+            (DOF.ux, DOF.uy),
+        ]
 
     def pmatrix(self, xi: NDArray) -> NDArray:
         N = self.shape(xi)
@@ -294,7 +298,16 @@ class CPX8(Quad8, ContinuumElement, IsoparametricElement):
 
     @property
     def node_freedom_table(self) -> list[tuple[int, ...]]:
-        return [(Ux, Uy), (Ux, Uy), (Ux, Uy), (Ux, Uy), (Ux, Uy), (Ux, Uy), (Ux, Uy), (Ux, Uy)]
+        return [
+            (DOF.ux, DOF.uy),
+            (DOF.ux, DOF.uy),
+            (DOF.ux, DOF.uy),
+            (DOF.ux, DOF.uy),
+            (DOF.ux, DOF.uy),
+            (DOF.ux, DOF.uy),
+            (DOF.ux, DOF.uy),
+            (DOF.ux, DOF.uy),
+        ]
 
     def pmatrix(self, xi: NDArray) -> NDArray:
         N = self.shape(xi)

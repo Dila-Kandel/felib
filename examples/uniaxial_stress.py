@@ -38,9 +38,7 @@ def exercise(esize: float = 0.05):
     step.traction(sideset="Bottom", magnitude=1e8, direction=[0, -1])
     simulation.run()
 
-    solution = simulation.csteps[-1].solution
-
-    u = solution.dofs.reshape((model.nnode, -1))
+    u = simulation.ndata["u"]
     U = np.linalg.norm(u, axis=1)
     print(np.amax(U))
 
