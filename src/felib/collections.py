@@ -88,7 +88,7 @@ class NodeData:
         Parameters
         ----------
         dof_manager : DOFManager
-            Provides node_freedom_table, dof_map, and node_freedom_cols.
+            Provides node_freedom_table, dof_map, and node_dof_cols.
         node_vars : list[str], optional
             Names of additional node variables not associated with DOFs.
         """
@@ -97,7 +97,7 @@ class NodeData:
 
         # Build variable names: DOFs first, then extras
         node_vars = node_vars or []
-        self.var_names = [dof_type.label for dof_type in dof_manager.node_freedom_types]
+        self.var_names = [dof_type.label for dof_type in dof_manager.node_dof_types]
         for node_var in node_vars:
             names = node_var.labels(dof_manager.ndim)
             for name in names:
@@ -141,7 +141,7 @@ class NodeData:
             for local_idx, gdof in enumerate(self.dof_manager.dof_map[n]):
                 if gdof >= 0:
                     dof_type = self.dof_manager.node_freedom_type(local_idx)
-                    col = self.dof_manager.node_freedom_cols[dof_type]
+                    col = self.dof_manager.node_dof_cols[dof_type]
                     dofs[gdof] = self.data[0, n, col]
 
         return dofs
@@ -159,7 +159,7 @@ class NodeData:
             for local_idx, gdof in enumerate(self.dof_manager.dof_map[n]):
                 if gdof >= 0:
                     dof_type = self.dof_manager.node_freedom_type(local_idx)
-                    col = self.dof_manager.node_freedom_cols[dof_type]
+                    col = self.dof_manager.node_dof_cols[dof_type]
                     self.data[1, n, col] = dofs[gdof]
 
     def gather(self, name: str) -> np.ndarray:

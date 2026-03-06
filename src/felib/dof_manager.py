@@ -24,8 +24,8 @@ class DOFManager:
     def __init__(self, model: "Model") -> None:
         self.ndim = model.ndim
         self._node_freedom_table: NDArray = np.empty((0, 0), dtype=int)
-        self._node_freedom_types: list[DOF] = []
-        self._node_freedom_cols: dict[DOF, int] = {}
+        self._node_dof_types: list[DOF] = []
+        self._node_dof_cols: dict[DOF, int] = {}
         self._block_dof_maps: dict[int, NDArray] = {}
         self._dof_map: NDArray = np.empty((0, 0), dtype=int)
         self._dof_types: NDArray = np.empty(0, dtype=int)
@@ -36,10 +36,10 @@ class DOFManager:
         return self._dof_map[node, ldof]
 
     def dof_index(self, dof_type: DOF) -> int:
-        return int(self.node_freedom_cols[dof_type])
+        return int(self.node_dof_cols[dof_type])
 
     def node_freedom_type(self, local_dof: int) -> DOF:
-        return self.node_freedom_types[local_dof]
+        return self.node_dof_types[local_dof]
 
     @property
     def size(self) -> int:
@@ -69,12 +69,12 @@ class DOFManager:
         return self._node_freedom_table
 
     @property
-    def node_freedom_types(self) -> list[DOF]:
-        return self._node_freedom_types
+    def node_dof_types(self) -> list[DOF]:
+        return self._node_dof_types
 
     @property
-    def node_freedom_cols(self) -> dict[DOF, int]:
-        return self._node_freedom_cols
+    def node_dof_cols(self) -> dict[DOF, int]:
+        return self._node_dof_cols
 
     @property
     def block_dof_maps(self) -> dict[int, NDArray]:
@@ -98,7 +98,7 @@ class DOFManager:
         Build all DOF-related tables for the model.
 
         Steps:
-            1) Build node_freedom_table and node_freedom_types
+            1) Build node_freedom_table and node_dof_types
             2) Build global DOF map: dof_map[node, local_dof]
             3) Build per-block DOF map: block_dof_map[blockno][local_dof]
         """
@@ -118,9 +118,9 @@ class DOFManager:
         Produces:
             self._node_freedom_table : ndarray[int] of shape (nnode, n_active_dofs)
                 1 if the DOF is active at the node, 0 otherwise
-            self._node_freedom_types : ndarray[int] of length n_active_dofs
+            self._node_dof_types : ndarray[int] of length n_active_dofs
                 Physical DOF type corresponding to each column (Ux, Uy, ..., T)
-            self._node_freedom_cols : dict[int, int] of length n_active_dofs
+            self._node_dof_cols : dict[int, int] of length n_active_dofs
                 Physical DOF type corresponding to each column (Ux, Uy, ..., T)
             self.ndof : int
                 Total number of active DOFs in the model
@@ -159,8 +159,8 @@ class DOFManager:
         # 4) Compress node signature and store
         # -----------------------------
         self._node_freedom_table = node_sig_full[:, active_cols].copy()
-        self._node_freedom_types = [DOF(_) for _ in sorted(active_cols)]
-        self._node_freedom_cols = {t: i for i, t in enumerate(self._node_freedom_types)}
+        self._node_dof_types = [DOF(_) for _ in sorted(active_cols)]
+        self._node_dof_cols = {t: i for i, t in enumerate(self._node_dof_types)}
         self._ndof = int(self._node_freedom_table.sum())
 
     def build_dof_map(self) -> None:
@@ -184,7 +184,7 @@ class DOFManager:
 
         # DOFs associated with displacment
         dof_types = np.zeros(global_dofs.size, dtype=int)
-        node_types_expanded = np.tile(self._node_freedom_types, (nnode, 1))
+        node_types_expanded = np.tile(self._node_dof_types, (nnode, 1))
         dof_types[:] = node_types_expanded.ravel()[mask]
         self._dof_types = dof_types
 
@@ -206,7 +206,7 @@ class DOFManager:
                 gid = block.node_map[i]
                 lid = model.mesh.node_map.local(gid)
                 for dof_type in block.element.node_freedom_table[0]:
-                    col = self._node_freedom_cols[DOF(dof_type)]
+                    col = self._node_dof_cols[DOF(dof_type)]
                     gdof = self._dof_map[lid, col]
                     block_dof_map[local_dof_idx] = gdof
                     local_dof_idx += 1
