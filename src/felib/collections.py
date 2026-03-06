@@ -50,7 +50,7 @@ class ElementBlockData:
         self.var_names = list(elem_var_names)
 
     def advance_state(self) -> None:
-        self.data[0] = self.data[1]
+        self.data[0, :] = self.data[1, :]
 
     @property
     def scratch(self) -> NDArray:
@@ -77,9 +77,6 @@ class NodeData:
     data : np.ndarray
         Node variable storage, shape (2, nnode, nvars)
         [0] = converged, [1] = scratch space.
-    dof_col_map : np.ndarray
-        Maps (node, local_dof_index) -> column in data array.
-        -1 indicates the DOF is inactive at that node.
     var_names : list[str]
         Names of all variables (DOFs first, then extra node variables)
     """
@@ -122,18 +119,6 @@ class NodeData:
         nnode = dof_manager.nnode
         self.data = np.zeros((2, nnode, self.nvars), dtype=float)
 
-        # Build per-node local DOF -> column index mapping
-        # shape (nnode, max_local_dofs_per_node)
-        max_local_dofs = dof_manager.node_freedom_table.shape[1]
-        self.dof_col_map = -np.ones((nnode, max_local_dofs), dtype=int)
-
-        for n in range(nnode):
-            for local_idx, active in enumerate(dof_manager.node_freedom_table[n]):
-                # Column index in NodeData.data for this DOF
-                dof_type = dof_manager.node_freedom_type(local_idx)
-                col = dof_manager.node_freedom_cols[dof_type]
-                self.dof_col_map[n, local_idx] = col
-
     def __getitem__(self, name: str) -> np.ndarray:
         return self.gather(name)
 
@@ -155,7 +140,8 @@ class NodeData:
         for n in range(self.nnode):
             for local_idx, gdof in enumerate(self.dof_manager.dof_map[n]):
                 if gdof >= 0:
-                    col = self.dof_col_map[n, local_idx]
+                    dof_type = self.dof_manager.node_freedom_type(local_idx)
+                    col = self.dof_manager.node_freedom_cols[dof_type]
                     dofs[gdof] = self.data[0, n, col]
 
         return dofs
@@ -172,7 +158,8 @@ class NodeData:
         for n in range(self.nnode):
             for local_idx, gdof in enumerate(self.dof_manager.dof_map[n]):
                 if gdof >= 0:
-                    col = self.dof_col_map[n, local_idx]
+                    dof_type = self.dof_manager.node_freedom_type(local_idx)
+                    col = self.dof_manager.node_freedom_cols[dof_type]
                     self.data[1, n, col] = dofs[gdof]
 
     def gather(self, name: str) -> np.ndarray:
@@ -204,7 +191,7 @@ class NodeData:
         return self.data[1]
 
     def advance_state(self) -> None:
-        self.data[0] = self.data[1]
+        self.data[0, :] = self.data[1, :]
 
     def sync(self) -> None:
         self.data[1] = self.data[0]

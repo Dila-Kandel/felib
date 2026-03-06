@@ -76,15 +76,6 @@ class Simulation:
             for var in step.node_variables():
                 if var not in node_vars:
                     node_vars.append(var)
-        dof_ix: list[list[int]] = []
-        nnode, nlocal = self.dof_manager.shape()
-        for node in range(nnode):
-            for ldof in range(nlocal):
-                gdof = self.dof_manager.global_dof(node, ldof)
-                if gdof >= 0:
-                    dof_type = self.dof_manager.node_freedom_type(ldof)
-                    col = self.dof_manager.dof_index(dof_type)
-                    dof_ix.append([node, col])
         self.ndata = NodeData(self.dof_manager, node_vars=node_vars)
 
     def run(self) -> None:
