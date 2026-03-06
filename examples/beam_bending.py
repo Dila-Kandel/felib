@@ -48,7 +48,7 @@ def beam_bending() -> None:
 def beam_bending_quad4() -> felib.simulation.Simulation:
     nodes, elems = felib.meshing.rectmesh((0, 10.0, 0, 0.3), nx=10, ny=3)
     mesh = felib.mesh.Mesh(nodes=nodes, elements=elems)
-    mesh.nodeset(name="ihi", region=lambda x, on_boundary: on_boundary and x[0] > 9.991)
+    mesh.nodeset(name="ihi", region=lambda node: node.on_boundary and node.x[0] > 9.991)
     mesh.sideset(name="ilo", region=lambda x, on_boundary: on_boundary and x[0] < 0.001)
     mesh.block(name="Block-1", cell_type=felib.element.Quad4, region=lambda x, on_boundary: True)
     m = felib.material.LinearElastic(density=2400.0, youngs_modulus=E, poissons_ratio=nu)
@@ -65,7 +65,7 @@ def beam_bending_quad4() -> felib.simulation.Simulation:
 def beam_bending_quad8() -> felib.simulation.Simulation:
     nodes, elems = felib.meshing.rectmesh_quad8((0, 10.0, 0, 0.3), nx=10, ny=3)
     mesh = felib.mesh.Mesh(nodes=nodes, elements=elems)
-    mesh.nodeset(name="ihi", region=lambda x, on_boundary: on_boundary and x[0] > 9.991)
+    mesh.nodeset(name="ihi", region=lambda node: node.on_boundary and node.x[0] > 9.991)
     mesh.sideset(name="ilo", region=lambda x, on_boundary: on_boundary and x[0] < 0.001)
     mesh.block(name="Block-1", cell_type=felib.element.Quad8, region=lambda x, on_boundary: True)
     m = felib.material.LinearElastic(density=2400.0, youngs_modulus=E, poissons_ratio=nu)

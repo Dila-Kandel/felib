@@ -457,9 +457,7 @@ class Solution:
     lagrange_multipliers: NDArray = field(default_factory=lambda: np.empty((0,)))
 
 
-class RegionSelector(ABC):
-    @abstractmethod
-    def __call__(self, x: Sequence[float], on_boundary: bool) -> bool: ...
+class RegionSelector(ABC): ...
 
 
 @dataclass
@@ -485,6 +483,19 @@ class BlockSpec:
     cell_type: Type["ReferenceElement"]
     region: RegionSelector | None
     elements: Sequence[int] | None
+
+
+class NodeSelector(RegionSelector):
+    @abstractmethod
+    def __call__(self, node: Node) -> bool: ...
+
+
+class NodeXSelector(RegionSelector):
+    def __init__(self, nodes: list[int]) -> None:
+        self.nodes = nodes
+
+    def __call__(self, node: Node) -> bool:
+        return node.gid in self.nodes
 
 
 @dataclass

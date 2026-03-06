@@ -15,9 +15,9 @@ def exercise(esize: float = 0.05):
         def __call__(self, x: Sequence[float], on_boundary: bool) -> bool:
             return True
 
-    class Top(felib.collections.RegionSelector):
-        def __call__(self, x: Sequence[float], on_boundary: bool) -> bool:
-            if on_boundary and x[1] > 0.999:
+    class Top(felib.collections.NodeSelector):
+        def __call__(self, node: felib.collections.Node) -> bool:
+            if node.on_boundary and node.x[1] > 0.999:
                 return True
             return False
 

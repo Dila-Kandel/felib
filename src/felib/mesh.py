@@ -1,5 +1,6 @@
 import logging
 from collections import defaultdict
+from typing import Callable
 from typing import Sequence
 from typing import Type
 
@@ -9,6 +10,8 @@ from numpy.typing import NDArray
 from . import collections
 from .block import TopoBlock
 from .collections import Map
+from .collections import NodeSelector
+from .collections import NodeXSelector
 from .element import ReferenceElement
 from .pytools import _require_unfrozen
 from .pytools import frozen_property
@@ -55,9 +58,19 @@ class Mesh:
 
     @_require_unfrozen
     def nodeset(
-        self, name: str, region: RegionSelector | None = None, nodes: list[int] | None = None
+        self,
+        name: str,
+        region: Callable[[collections.Node], bool] | NodeSelector | None = None,
+        nodes: list[int] | None = None,
     ) -> None:
-        return self._builder.nodeset(name, region=region, nodes=nodes)
+        if region is None and nodes is None:
+            raise ValueError("Expected region or nodes")
+        elif region is not None and nodes is not None:
+            raise ValueError("Expected region or nodes, not both")
+        if nodes is not None:
+            region = NodeXSelector(nodes)
+        assert region is not None
+        return self._builder.nodeset(name, region=region)
 
     @_require_unfrozen
     def elemset(
@@ -273,33 +286,20 @@ class _MeshBuilder:
             node.on_boundary = True
         return
 
-    def nodeset(
-        self, name: str, region: RegionSelector | None = None, nodes: list[int] | None = None
-    ) -> None:
-        if region is None and nodes is None:
-            raise ValueError("Expected region or nodes")
-        elif region is not None and nodes is not None:
-            raise ValueError("Expected region or nodes, not both")
+    def nodeset(self, name: str, region: Callable[[collections.Node], bool] | NodeSelector) -> None:
         nodesets = self.metadata["nodesets"]
         if name in [ns[0] for ns in nodesets.values()]:
             raise ValueError(f"Duplicate node set {name!r}")
-        nodesets[f"nodeset-{len(nodesets)}"] = (name, region, nodes)
+        nodesets[f"nodeset-{len(nodesets)}"] = (name, region)
 
     def construct_nodesets(self) -> None:
         self.mesh._nodesets.clear()
         name: str
-        region: RegionSelector | None
-        nodes: list[int] | None
-        for name, region, nodes in self.metadata.get("nodesets", {}).values():
-            if region is not None:
-                for node in self.mesh.nodes:
-                    if region(node.x, on_boundary=node.on_boundary):  # type: ignore
-                        self.mesh._nodesets[name].append(node.lid)
-            elif nodes is not None:
-                for gid in nodes:
-                    self.mesh._nodesets[name].append(self.mesh.node_map.local(gid))
-            else:
-                raise ValueError("Cannot construct nodeset from empty nodeset data")
+        region: NodeSelector
+        for name, region in self.metadata.get("nodesets", {}).values():
+            for node in self.mesh.nodes:
+                if region(node):
+                    self.mesh._nodesets[name].append(node.lid)
             if name not in self.mesh._nodesets:
                 raise ValueError(f"{name}: could not find nodes in region")
 

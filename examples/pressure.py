@@ -21,8 +21,8 @@ def exercise(esize: float = 0.05):
     nodes, elements = felib.meshing.plate_with_hole(esize=esize)
     mesh = felib.mesh.Mesh(nodes=nodes, elements=elements)
     mesh.block(name="Block-1", region=Everywhere(), cell_type=felib.element.Tri3)
-    mesh.nodeset("Top Left", region=lambda x, on_boundary: x[0] < -0.99 and x[1] > 0.99)
-    mesh.nodeset("Top Right", region=lambda x, on_boundary: x[0] > 0.99 and x[1] > 0.99)
+    mesh.nodeset("Top Left", region=lambda node: node.x[0] < -0.99 and node.x[1] > 0.99)
+    mesh.nodeset("Top Right", region=lambda node: node.x[0] > 0.99 and node.x[1] > 0.99)
     mesh.sideset("Inside", region=Inside())
     mesh.elemset("All", region=Everywhere())
 

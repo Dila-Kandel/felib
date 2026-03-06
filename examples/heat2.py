@@ -34,15 +34,15 @@ def heat2(esize: float = 0.05):
                 return True
             return False
 
-    class Left(felib.collections.RegionSelector):
-        def __call__(self, x: Sequence[float], on_boundary: bool) -> bool:
-            if on_boundary and x[0] < -0.999:
+    class Left(felib.collections.NodeSelector):
+        def __call__(self, node: felib.collections.Node) -> bool:
+            if node.on_boundary and node.x[0] < -0.999:
                 return True
             return False
 
-    class Right(felib.collections.RegionSelector):
-        def __call__(self, x: Sequence[float], on_boundary: bool) -> bool:
-            if on_boundary and x[0] > 0.999:
+    class Right(felib.collections.NodeSelector):
+        def __call__(self, node: felib.collections.Node) -> bool:
+            if node.on_boundary and node.x[0] > 0.999:
                 return True
             return False
 
