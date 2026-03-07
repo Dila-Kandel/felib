@@ -8,8 +8,8 @@ import felib.pytools as py
 
 
 def test_mms(tmp_path: Path):
-    class Everywhere(felib.collections.RegionSelector):
-        def __call__(self, x: Sequence[float], on_boundary: bool) -> bool:
+    class Everywhere(felib.collections.ElementSelector):
+        def __call__(self, element: felib.collections.Element):
             return True
 
     class HeatSource(felib.collections.ScalarField):
@@ -63,21 +63,17 @@ def test_heat1(tmp_path: Path):
 
     """
 
-    class Everywhere(felib.collections.RegionSelector):
-        def __call__(self, x: Sequence[float], on_boundary: bool) -> bool:
+    class Everywhere(felib.collections.ElementSelector):
+        def __call__(self, element: felib.collections.Element):
             return True
 
-    class Top(felib.collections.RegionSelector):
-        def __call__(self, x: Sequence[float], on_boundary: bool) -> bool:
-            if on_boundary and x[1] > 0.999:
-                return True
-            return False
+    class Top(felib.collections.SideSelector):
+        def __call__(self, side: felib.collections.Side) -> bool:
+            return side.x[1] > 0.999
 
-    class Bottom(felib.collections.RegionSelector):
-        def __call__(self, x: Sequence[float], on_boundary: bool) -> bool:
-            if on_boundary and x[1] < -0.999:
-                return True
-            return False
+    class Bottom(felib.collections.SideSelector):
+        def __call__(self, side: felib.collections.Side) -> bool:
+            return side.x[1] < -0.999
 
     tmp_path.mkdir(parents=True, exist_ok=True)
     with py.working_dir(tmp_path):

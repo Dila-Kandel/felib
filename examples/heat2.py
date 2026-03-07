@@ -24,33 +24,25 @@ def heat2(esize: float = 0.05):
 
     """
 
-    class Everywhere(felib.collections.RegionSelector):
-        def __call__(self, x: Sequence[float], on_boundary: bool) -> bool:
+    class Everywhere(felib.collections.ElementSelector):
+        def __call__(self, el) -> bool:
             return True
 
-    class Top(felib.collections.RegionSelector):
-        def __call__(self, x: Sequence[float], on_boundary: bool) -> bool:
-            if on_boundary and x[1] > 0.999:
-                return True
-            return False
+    class Top(felib.collections.SideSelector):
+        def __call__(self, side: felib.collections.Side) -> bool:
+            return side.x[1] > 0.999
+
+    class Bottom(felib.collections.SideSelector):
+        def __call__(self, side: felib.collections.Side) -> bool:
+            return side.x[1] < -0.999
 
     class Left(felib.collections.NodeSelector):
         def __call__(self, node: felib.collections.Node) -> bool:
-            if node.on_boundary and node.x[0] < -0.999:
-                return True
-            return False
+            return node.on_boundary and node.x[0] < -0.999
 
     class Right(felib.collections.NodeSelector):
         def __call__(self, node: felib.collections.Node) -> bool:
-            if node.on_boundary and node.x[0] > 0.999:
-                return True
-            return False
-
-    class Bottom(felib.collections.RegionSelector):
-        def __call__(self, x: Sequence[float], on_boundary: bool) -> bool:
-            if on_boundary and x[1] < -0.999:
-                return True
-            return False
+            return node.on_boundary and node.x[0] > 0.999
 
     class HeatSource(felib.collections.ScalarField):
         def __call__(self, x: Sequence[float], time: Sequence[float]) -> float:

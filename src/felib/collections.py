@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from dataclasses import field
 from typing import TYPE_CHECKING
 from typing import Any
+from typing import Callable
 from typing import Generator
 from typing import Sequence
 from typing import Type
@@ -470,6 +471,14 @@ class Node:
 
 
 @dataclass
+class Element:
+    lid: int
+    gid: int
+    x: Sequence[float]  # element centroid
+    block: str | None = None
+
+
+@dataclass
 class Edge:
     element: int
     edge: int
@@ -478,11 +487,12 @@ class Edge:
 
 
 @dataclass
-class BlockSpec:
-    name: str
-    cell_type: Type["ReferenceElement"]
-    region: RegionSelector | None
-    elements: Sequence[int] | None
+class Side:
+    element: Element
+    side: int  # global side number -> lid + 1
+    x: Sequence[float]
+    normal: list[float]
+    on_boundary: bool
 
 
 class NodeSelector(RegionSelector):
@@ -490,7 +500,7 @@ class NodeSelector(RegionSelector):
     def __call__(self, node: Node) -> bool: ...
 
 
-class NodeXSelector(RegionSelector):
+class NodeXSelector(NodeSelector):
     def __init__(self, nodes: list[int]) -> None:
         self.nodes = nodes
 
@@ -498,22 +508,37 @@ class NodeXSelector(RegionSelector):
         return node.gid in self.nodes
 
 
-@dataclass
-class NodeSetSpec:
-    name: str
-    region: RegionSelector
+class ElementSelector(RegionSelector):
+    @abstractmethod
+    def __call__(self, element: Element) -> bool: ...
+
+
+class ElementXSelector(ElementSelector):
+    def __init__(self, elements: list[int]) -> None:
+        self.elements = elements
+
+    def __call__(self, element: Element) -> bool:
+        return element.gid in self.elements
+
+
+class SideSelector(RegionSelector):
+    @abstractmethod
+    def __call__(self, node: Side) -> bool: ...
+
+
+class SideXSelector(SideSelector):
+    def __init__(self, sides: list[Sequence[int]]) -> None:
+        self.sides: list[tuple[int, ...]] = [tuple(side[:2]) for side in sides]
+
+    def __call__(self, side: Side) -> bool:
+        return (side.element.gid, side.side) in self.sides
 
 
 @dataclass
-class SideSetSpec:
+class BlockSpec:
     name: str
-    region: RegionSelector
-
-
-@dataclass
-class ElemSetSpec:
-    name: str
-    region: RegionSelector
+    cell_type: Type["ReferenceElement"]
+    region: Callable[[Element], bool] | ElementSelector
 
 
 @dataclass

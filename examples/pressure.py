@@ -1,6 +1,5 @@
 import argparse
 import sys
-from typing import Sequence
 
 import numpy as np
 
@@ -8,15 +7,13 @@ import felib
 
 
 def exercise(esize: float = 0.05):
-    class Everywhere(felib.collections.RegionSelector):
-        def __call__(self, x: Sequence[float], on_boundary: bool) -> bool:
+    class Everywhere(felib.collections.ElementSelector):
+        def __call__(self, element: felib.collections.Element):
             return True
 
-    class Inside(felib.collections.RegionSelector):
-        def __call__(self, x: Sequence[float], on_boundary: bool) -> bool:
-            if on_boundary and abs(x[0]) < 0.8 and abs(x[1]) < 0.8:
-                return True
-            return False
+    class Inside(felib.collections.SideSelector):
+        def __call__(self, side: felib.collections.Side):
+            return abs(side.x[0]) < 0.8 and abs(side.x[1]) < 0.8
 
     nodes, elements = felib.meshing.plate_with_hole(esize=esize)
     mesh = felib.mesh.Mesh(nodes=nodes, elements=elements)

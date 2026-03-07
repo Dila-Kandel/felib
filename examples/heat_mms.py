@@ -8,8 +8,8 @@ import felib
 
 
 def mms(esize: float = 0.05):
-    class Everywhere(felib.collections.RegionSelector):
-        def __call__(self, x: Sequence[float], on_boundary: bool) -> bool:
+    class Everywhere(felib.collections.ElementSelector):
+        def __call__(self, el: felib.collections.Element):
             return True
 
     class HeatSource(felib.collections.ScalarField):
