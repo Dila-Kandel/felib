@@ -32,7 +32,7 @@ def exercise(esize: float = 0.05):
     mesh.sideset("Bottom", region=Bottom())
     mesh.elemset("All", region=Everywhere())
 
-    m = felib.material.LinearElastic(density=2400.0, youngs_modulus=30.0e9, poissons_ratio=0.3)
+    m = felib.material.LinearElastic(density=2400.0, youngs_modulus=30.0e9, poissons_ratio=0.499) #nearly incompressible
     model = felib.model.Model(mesh, name="plate_with_hole_Q4")
     model.assign_properties(block="Block-1", element=felib.element.CPE4(), material=m)
 
