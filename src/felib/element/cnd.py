@@ -286,7 +286,7 @@ class CPE4(CPX4):
         return B
 
 class CPE4H(CPE4):
-    """Plane strain quadrilateral with hybrid u-p fomulation."""
+    """Plane strain quadrilateral with hybrid u-p fomulation, constant pressure."""
 
     ndir = 3
     nshr = 1
