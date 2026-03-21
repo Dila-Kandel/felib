@@ -302,7 +302,9 @@ class IsoparametricElement(Element):
         return float(np.linalg.norm(self.edge_tangent(edge_no, p, xi)))
 
     def bmatrix_vol(self, p: NDArray, xi: NDArray) -> NDArray:
-        raise NotImplementedError(f"{self.__class__.__name__} does not define a volumetric B matrix")
+        raise NotImplementedError(
+            f"{self.__class__.__name__} does not define a volumetric B matrix"
+        )
 
     def pressure_shape(self, xi: NDArray) -> NDArray:
         raise NotImplementedError(
@@ -434,6 +436,7 @@ class IsoparametricElement(Element):
         dev_stresses: list[NDArray] = []
         pressure_shapes: list[NDArray] = []
         volumetric_strains: list[float] = []
+#Code lines 359-438 generated with CODEX from ChatGPT, adapted for ME7540
 
         for ipt, (w, xi) in enumerate(self.integration_points()):
             J = self.jacobian(p, xi)
@@ -483,7 +486,9 @@ class IsoparametricElement(Element):
             pressure_dofs = -np.linalg.solve(Kpp, Rp)
             ke = Kuu - Kup @ np.linalg.solve(Kpp, Kpu)
         except np.linalg.LinAlgError as e:
-            raise RuntimeError(f"Local pressure condensation failed for {self.__class__.__name__}") from e
+            raise RuntimeError(
+                f"Local pressure condensation failed for {self.__class__.__name__}"
+            ) from e
         re = Ru + Kup @ pressure_dofs
 
         ntens = len(strains[0]) if strains else 0
@@ -562,7 +567,7 @@ class IsoparametricElement(Element):
         ndof = self.nnode * self.dof_per_node
         re = np.zeros(ndof)
         ke = np.zeros((ndof, ndof))
-        
+
         if getattr(self, "uses_local_pressure", False):
             return self.eval_mixed_condensed(
                 material,

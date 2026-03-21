@@ -7,6 +7,7 @@ MapFunction = Callable[
     [NDArray[np.float64], NDArray[np.float64]], tuple[NDArray[np.float64], NDArray[np.float64]]
 ]
 
+
 def plate_with_hole_Q4(
     bbox: tuple[float, float, float, float],
     nx: int = 1,
@@ -43,6 +44,7 @@ def plate_with_hole_Q4(
     conn = [[eid + 1, n1 + 1, n2 + 1, n3 + 1, n4 + 1] for eid, (n1, n2, n3, n4) in enumerate(conn0)]
 
     return coords, conn
+
 
 def gridmesh2d(
     nx: int, ny: int, mapfn: MapFunction

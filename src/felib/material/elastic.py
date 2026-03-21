@@ -56,7 +56,7 @@ class LinearElastic(Material):
             s = np.dot(D, e)
             return D, s
         raise NotImplementedError(f"{ndir=}, {nshr=}")
-    
+
     def eval_hybrid(
         self,
         hsv: NDArray,
