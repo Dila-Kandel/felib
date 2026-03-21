@@ -287,7 +287,7 @@ class CPE4(CPX4):
 
 class CPE4H(CPE4):
     """Plane strain quadrilateral with hybrid u-p fomulation, constant pressure."""
-
+    uses_local_pressure = True
     ndir = 3
     nshr = 1
     npressure = 1
@@ -307,6 +307,9 @@ class CPE4H(CPE4):
         Bv[0, 0::2] = dNdx[0, :]  
         Bv[0, 1::2] = dNdx[1, :]  
         return Bv
+    
+    def pressure_shape(self, xi: NDArray) -> NDArray:
+        return np.ones((1, self.npressure), dtype=float)
 
 class CPX8(Quad8, ContinuumElement, IsoparametricElement):
     """

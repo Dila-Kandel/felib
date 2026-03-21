@@ -393,7 +393,9 @@ class IsoparametricElement(Element):
         ndof = self.nnode * self.dof_per_node
         re = np.zeros(ndof)
         ke = np.zeros((ndof, ndof))
-
+        
+        if getattr(self, "uses_local_pressure", False):
+            return self.eval_mixed_condensed(...)
         # ————————————————— Volume integration —————————————————
         for ipt, (w, xi) in enumerate(self.integration_points()):
             J = self.jacobian(p, xi)
